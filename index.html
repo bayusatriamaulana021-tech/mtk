@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Segitiga Pascal dalam Kombinatorika – Kelompok 6</title>
+
+  <!-- Google Fonts: Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome 6.7 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous" />
+
+  <!-- MathJax -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']],
+        packages: {'[+]': ['ams']}
+      },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] },
+      startup: { ready() { MathJax.startup.defaultReady(); } }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" crossorigin="anonymous" async></script>
+
+  <style>
+    /* =========================================================
+       CSS CUSTOM PROPERTIES (TOKEN SYSTEM)
+       ========================================================= */
+    :root {
+      --blue-900: #0d1b3e;
+      --blue-800: #1a2f6e;
+      --blue-700: #1e40af;
+      --blue-600: #2563eb;
+      --blue-500: #3b82f6;
+      --blue-400: #60a5fa;
+      --blue-300: #93c5fd;
+      --blue-100: #dbeafe;
+      --blue-50:  #eff6ff;
+      --white:    #ffffff;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-400: #94a3b8;
+      --gray-600: #475569;
+      --gray-800: #1e293b;
+      --accent:   #38bdf8;
+      --gold:     #f59e0b;
+
+      /* Dark mode overrides via class on <body> */
+      --bg:       #f0f4ff;
+      --surface:  #ffffff;
+      --text:     #0d1b3e;
+      --text-muted: #475569;
+      --card-bg:  rgba(255,255,255,0.75);
+      --card-border: rgba(37,99,235,0.15);
+      --shadow:   0 4px 24px rgba(37,99,235,0.10);
+    }
+
+    body.dark {
+      --bg:        #0d1b3e;
+      --surface:   #1a2f6e;
+      --text:      #e0eaff;
+      --text-muted:#93c5fd;
+      --card-bg:   rgba(26,47,110,0.75);
+      --card-border: rgba(96,165,250,0.20);
+      --shadow:    0 4px 24px rgba(0,0,0,0.4);
+    }
+
+    /* =========================================================
+       RESET + BASE
+       ========================================================= */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      transition: background 0.4s, color 0.4s;
+      user-select: none;
+    }
+
+    /* =========================================================
+       SLIDE CONTAINER
+       ========================================================= */
+    #presentation {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 56px 64px 80px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      transform: translateX(60px);
+      overflow: hidden;
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+      z-index: 2;
+    }
+
+    .slide.exit-left  { opacity: 0; transform: translateX(-60px); z-index: 1; }
+    .slide.exit-right { opacity: 0; transform: translateX(60px);  z-index: 1; }
+
+    /* =========================================================
+       BACKGROUND GRADIENTS PER SLIDE TYPE
+       ========================================================= */
+    .slide-cover { background: linear-gradient(135deg, var(--blue-900) 0%, var(--blue-700) 60%, var(--blue-500) 100%); }
+    .slide-content {
+      background: var(--bg);
+    }
+
+    /* Decorative circle accent */
+    .slide::before {
+      content: '';
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 70%);
+      top: -200px; right: -200px;
+      pointer-events: none;
+    }
+
+    /* =========================================================
+       TYPOGRAPHY
+       ========================================================= */
+    .slide-title {
+      font-size: clamp(1.4rem, 3vw, 2.2rem);
+      font-weight: 700;
+      color: var(--blue-700);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    body.dark .slide-title { color: var(--blue-300); }
+
+    .slide-subtitle {
+      font-size: clamp(0.85rem, 1.4vw, 1rem);
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      font-weight: 500;
+    }
+
+    .slide-body {
+      width: 100%;
+      max-width: 960px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    p { line-height: 1.75; font-size: clamp(0.82rem, 1.3vw, 0.95rem); color: var(--text); }
+    body.dark p { color: var(--text); }
+
+    /* =========================================================
+       CARD / GLASSMORPHISM
+       ========================================================= */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.1rem 1.4rem;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: box-shadow 0.3s;
+    }
+    .card:hover { box-shadow: 0 8px 32px rgba(37,99,235,0.18); }
+
+    .card-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--blue-700);
+      margin-bottom: 0.4rem;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    body.dark .card-title { color: var(--blue-300); }
+
+    /* =========================================================
+       GRID LAYOUTS
+       ========================================================= */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9rem; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; }
+
+    /* =========================================================
+       PROGRESS BAR
+       ========================================================= */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--blue-500), var(--accent));
+      transition: width 0.4s ease;
+      z-index: 100;
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* =========================================================
+       CONTROLS / TOOLBAR
+       ========================================================= */
+    #toolbar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 40px;
+      padding: 8px 16px;
+      box-shadow: 0 4px 24px rgba(37,99,235,0.15);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: 100;
+      flex-wrap: nowrap;
+    }
+
+    .tb-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--blue-700);
+      font-size: 0.9rem;
+      padding: 6px 10px;
+      border-radius: 8px;
+      transition: background 0.2s, color 0.2s;
+      display: flex; align-items: center; gap: 4px;
+      white-space: nowrap;
+    }
+    body.dark .tb-btn { color: var(--blue-300); }
+    .tb-btn:hover { background: var(--blue-100); }
+    body.dark .tb-btn:hover { background: rgba(96,165,250,0.15); }
+    .tb-btn:active { transform: scale(0.95); }
+
+    .tb-sep {
+      width: 1px; height: 24px;
+      background: var(--card-border);
+    }
+
+    #slide-counter {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      min-width: 48px;
+      text-align: center;
+    }
+
+    #jump-input {
+      width: 40px;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text);
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.8rem;
+      text-align: center;
+      padding: 4px;
+      outline: none;
+    }
+
+    #timer-display {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--blue-500);
+      min-width: 44px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* =========================================================
+       SLIDE 1 – COVER
+       ========================================================= */
+    .cover-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 1rem;
+      color: #fff;
+      z-index: 1;
+    }
+
+    .cover-badge {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 40px;
+      padding: 6px 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      backdrop-filter: blur(8px);
+    }
+
+    .cover-title {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      background: linear-gradient(180deg, #fff 0%, #93c5fd 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .cover-subject {
+      font-size: clamp(0.9rem, 1.6vw, 1.1rem);
+      font-weight: 500;
+      opacity: 0.8;
+    }
+
+    .cover-divider {
+      width: 80px; height: 3px;
+      background: linear-gradient(90deg, transparent, #fff, transparent);
+      border-radius: 2px;
+    }
+
+    .cover-group {
+      font-size: clamp(0.75rem, 1.2vw, 0.9rem);
+      opacity: 0.85;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .members-grid {
+      display: grid;
+      grid-template-columns: repeat(3, auto);
+      gap: 0.4rem 2rem;
+      font-size: clamp(0.7rem, 1vw, 0.82rem);
+      opacity: 0.8;
+      text-align: left;
+    }
+
+    .member-item { display: flex; align-items: center; gap: 0.35rem; }
+    .member-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+    /* floating orbs on cover */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.12), transparent);
+      pointer-events: none;
+      animation: float 6s ease-in-out infinite;
+    }
+    .orb-1 { width: 300px; height: 300px; top: -80px; left: -80px; animation-delay: 0s; }
+    .orb-2 { width: 200px; height: 200px; bottom: 40px; right: -40px; animation-delay: 2s; }
+    .orb-3 { width: 120px; height: 120px; bottom: 120px; left: 100px; animation-delay: 4s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-20px); }
+    }
+
+    /* =========================================================
+       SLIDE HEADER STRIP
+       ========================================================= */
+    .slide-header {
+      width: 100%;
+      max-width: 960px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .slide-header-line {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .header-icon {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--blue-600), var(--blue-400));
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      font-size: 1rem;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(37,99,235,0.30);
+    }
+
+    /* =========================================================
+       PASCAL TRIANGLE
+       ========================================================= */
+    .pascal-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 1rem 0;
+    }
+
+    .pascal-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .pascal-cell {
+      width: 44px; height: 36px;
+      border-radius: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--blue-700);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: scale(0.6);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      cursor: default;
+    }
+    body.dark .pascal-cell { color: var(--blue-300); }
+
+    .pascal-cell.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .pascal-cell:hover {
+      background: var(--blue-600);
+      color: #fff;
+      transform: scale(1.1);
+      z-index: 5;
+    }
+
+    /* =========================================================
+       MATH DISPLAY
+       ========================================================= */
+    .math-box {
+      background: linear-gradient(135deg, var(--blue-50), #fff);
+      border-left: 4px solid var(--blue-500);
+      border-radius: 0 12px 12px 0;
+      padding: 1rem 1.4rem;
+      font-size: clamp(0.85rem, 1.4vw, 1rem);
+    }
+    body.dark .math-box {
+      background: linear-gradient(135deg, rgba(30,64,175,0.25), rgba(26,47,110,0.4));
+      border-color: var(--blue-400);
+    }
+
+    /* Step box */
+    .step-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .step-num {
+      min-width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--blue-600);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* =========================================================
+       TABLE
+       ========================================================= */
+    .styled-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    .styled-table th {
+      background: var(--blue-700);
+      color: #fff;
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+    .styled-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--card-border);
+      color: var(--text);
+    }
+    .styled-table tr:nth-child(even) td { background: var(--blue-50); }
+    body.dark .styled-table tr:nth-child(even) td { background: rgba(37,99,235,0.08); }
+    .styled-table th:first-child { border-radius: 8px 0 0 0; }
+    .styled-table th:last-child  { border-radius: 0 8px 0 0; }
+
+    /* =========================================================
+       ICONS PEOPLE (Slide 8)
+       ========================================================= */
+    .people-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .person-icon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.65rem;
+      color: var(--blue-600);
+      font-weight: 500;
+    }
+    .person-icon i {
+      font-size: 2rem;
+      color: var(--blue-500);
+    }
+    .person-icon.selected i { color: var(--gold); }
+
+    /* =========================================================
+       PROS / CONS
+       ========================================================= */
+    .pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .pros-list li, .cons-list li {
+      display: flex; align-items: flex-start; gap: 0.5rem;
+      font-size: 0.82rem;
+      margin-bottom: 0.5rem;
+      line-height: 1.5;
+    }
+    .pros-list li i { color: #22c55e; margin-top: 2px; }
+    .cons-list li i { color: #ef4444; margin-top: 2px; }
+
+    /* =========================================================
+       CONCLUSION POINTS
+       ========================================================= */
+    .conclusion-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.8rem;
+      padding: 0.7rem 1rem;
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      font-size: 0.85rem;
+    }
+    .conclusion-num {
+      min-width: 28px; height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue-600), var(--blue-400));
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* =========================================================
+       THANK YOU SLIDE
+       ========================================================= */
+    .thankyou-bg {
+      background: linear-gradient(135deg, var(--blue-900) 0%, var(--blue-700) 50%, var(--blue-500) 100%);
+    }
+
+    .ty-main {
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 900;
+      background: linear-gradient(180deg, #fff 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-align: center;
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.85; }
+    }
+
+    .ty-question {
+      font-size: clamp(1rem, 2.5vw, 1.6rem);
+      font-weight: 600;
+      color: rgba(255,255,255,0.85);
+      text-align: center;
+      animation: fadeup 1s ease 0.5s both;
+    }
+
+    .ty-quote {
+      max-width: 600px;
+      text-align: center;
+      font-style: italic;
+      font-size: clamp(0.75rem, 1.3vw, 0.9rem);
+      color: rgba(255,255,255,0.6);
+      line-height: 1.7;
+      border-left: none;
+      margin-top: 0.5rem;
+    }
+
+    @keyframes fadeup {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* confetti dots on thank-you */
+    .confetti-dot {
+      position: absolute;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: confetti-fall linear infinite;
+    }
+    @keyframes confetti-fall {
+      0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* =========================================================
+       PROPERTY BADGES (Slide 10)
+       ========================================================= */
+    .property-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.7rem 1rem;
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+    .prop-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--blue-600), var(--blue-400));
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    /* =========================================================
+       PATTERN CARDS (Slide 11)
+       ========================================================= */
+    .pattern-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 1rem;
+      text-align: center;
+      font-size: 0.8rem;
+      transition: transform 0.25s, box-shadow 0.25s;
+    }
+    .pattern-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(37,99,235,0.2); }
+    .pattern-card i { font-size: 1.8rem; color: var(--blue-500); margin-bottom: 0.4rem; }
+    .pattern-card h4 { font-size: 0.85rem; font-weight: 700; color: var(--blue-700); margin-bottom: 0.3rem; }
+    body.dark .pattern-card h4 { color: var(--blue-300); }
+
+    /* =========================================================
+       APP ICONS (Slide 13)
+       ========================================================= */
+    .app-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.9rem;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--blue-700);
+      text-align: center;
+      transition: transform 0.2s;
+    }
+    body.dark .app-card { color: var(--blue-300); }
+    .app-card:hover { transform: translateY(-3px); }
+    .app-card i { font-size: 1.8rem; color: var(--blue-500); }
+
+    /* =========================================================
+       ADDITION ANIMATION (Slide 5)
+       ========================================================= */
+    .add-demo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--blue-700);
+    }
+    body.dark .add-demo { color: var(--blue-300); }
+    .add-num {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: var(--blue-500);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+    .add-result {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: var(--gold);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      animation: pop 0.5s ease 0.5s both;
+    }
+    @keyframes pop {
+      from { transform: scale(0); }
+      to   { transform: scale(1); }
+    }
+
+    /* =========================================================
+       BINOMIAL (Slide 12)
+       ========================================================= */
+    .binomial-row {
+      display: flex;
+      gap: 0.4rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .binom-coeff {
+      width: 38px; height: 38px;
+      border-radius: 8px;
+      background: var(--blue-600);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .binom-term {
+      font-size: 0.85rem;
+      color: var(--text);
+      font-weight: 500;
+      padding: 0 0.3rem;
+    }
+
+    /* =========================================================
+       FIBONACCI (Slide 11 visual)
+       ========================================================= */
+    .fib-seq {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .fib-num {
+      padding: 4px 10px;
+      background: var(--blue-100);
+      color: var(--blue-700);
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    body.dark .fib-num { background: rgba(37,99,235,0.2); color: var(--blue-300); }
+
+    /* =========================================================
+       RESPONSIVE
+       ========================================================= */
+    @media (max-width: 768px) {
+      .slide { padding: 48px 20px 72px; }
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      .members-grid { grid-template-columns: 1fr 1fr; }
+      #toolbar { gap: 4px; padding: 6px 10px; }
+      .tb-btn { padding: 5px 7px; font-size: 0.8rem; }
+      .pascal-cell { width: 32px; height: 28px; font-size: 0.65rem; }
+      .pros-cons { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .members-grid { grid-template-columns: 1fr; }
+      .cover-title { font-size: 1.8rem; }
+    }
+
+    /* Scrollable inner area for content-heavy slides */
+    .slide-body.scrollable {
+      overflow-y: auto;
+      max-height: calc(100vh - 200px);
+      padding-right: 4px;
+    }
+    .slide-body.scrollable::-webkit-scrollbar { width: 4px; }
+    .slide-body.scrollable::-webkit-scrollbar-thumb {
+      background: var(--blue-300); border-radius: 4px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ============================================================
+       PROGRESS BAR
+       ============================================================ -->
+  <div id="progress-bar"></div>
+
+  <!-- ============================================================
+       PRESENTATION WRAPPER
+       ============================================================ -->
+  <div id="presentation">
+
+    <!-- ========================
+         SLIDE 1 – COVER
+         ======================== -->
+    <div class="slide slide-cover active" data-index="0">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+      <div class="cover-wrap">
+        <div class="cover-badge"><i class="fa-solid fa-graduation-cap"></i>&nbsp; Matematika Diskrit</div>
+        <h1 class="cover-title">Segitiga Pascal<br/>dalam Kombinatorika</h1>
+        <p class="cover-subject"><i class="fa-solid fa-book-open"></i> Presentasi Kelompok 6</p>
+        <div class="cover-divider"></div>
+        <div class="cover-group"><i class="fa-solid fa-users"></i> &nbsp;Anggota Kelompok</div>
+        <div class="members-grid">
+          <div class="member-item"><div class="member-dot"></div>Ardo Tri Novyan</div>
+          <div class="member-item"><div class="member-dot"></div>Maulana Bayu Satria</div>
+          <div class="member-item"><div class="member-dot"></div>Sinta Oktavia</div>
+          <div class="member-item"><div class="member-dot"></div>Rezvita Zahra Fyra S.</div>
+          <div class="member-item"><div class="member-dot"></div>Bilaarlisya</div>
+          <div class="member-item"><div class="member-dot"></div>Fadhillah Kharisma S.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================
+         SLIDE 2 – KOMBINATORIKA
+         ======================== -->
+    <div class="slide slide-content" data-index="1">
+      <div class="slide-header">
+        <div class="slide-header-line">
+          <div class="header-icon"><i class="fa-solid fa-shapes"></i></div>
+          <div>
+            <div class="slide-title">Pengertian Kombinatorika</div>
+            <div class="slide-subtitle">Dasar-dasar ilmu penghitungan susunan</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-body scrollable">
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-book"></i> Definisi</div>
+          <p>Kombinatorika adalah cabang matematika yang mempelajari cara menghitung, mengatur, dan memilih elemen dari suatu himpunan. Fokus utamanya adalah pada <strong>jumlah kemungkinan</strong> yang dapat terbentuk dari sekumpulan objek tanpa harus mendaftarkan semuanya satu per satu.</p>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-bullseye"></i> Tujuan</div>
+            <p>Menentukan jumlah cara pengaturan atau pemilihan objek secara efisien, sistematis, dan akurat, baik dengan memperhatikan urutan (permutasi) maupun tanpa urutan (kombinasi).</p>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-globe"></i> Ruang Lingkup</div>
+            <p>Kombinatorika mencakup <em>permutasi, kombinasi, prinsip perkalian, prinsip penambahan, binomial Newton,</em> dan teori graf sebagai cabang utamanya.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-lightbulb"></i> Contoh Penerapan Sehari-hari</div>
+          <div class="grid-3" style="margin-top:0.5rem">
+            <div style="text-align:center;font-size:0.8rem;color:var(--text-muted)">
+              <i class="fa-solid fa-lock" style="font-size:1.5rem;color:var(--blue-500);display:block;margin-bottom:4px"></i>
+              PIN ATM<br/><small>Berapa kombinasi 4 digit?</small>
+            </div>
+            <div style="text-align:center;font-size:0.8rem;color:var(--text-muted)">
+              <i class="fa-solid fa-ticket" style="font-size:1.5rem;color:var(--blue-500);display:block;margin-bottom:4px"></i>
+              Lotere<br/><small>Peluang menang jackpot</small>
+            </div>
+            <div style="text-align:center;font-size:0.8rem;color:var(--text-muted)">
+              <i class="fa-solid fa-shirt" style="font-size:1.5rem;color:var(--blue-500);display:block;margin-bottom:4px"></i>
+              Pilihan Baju<br/><small>Kombinasi outfit harian</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================
+         SLIDE 3 – APA ITU SEGITIGA PASCAL
+         ======================== -->
+    <div class="slide slide-content" data-index="2">
+      <div class="slide-header">
+        <div class="slide-header-line">
+          <div class="header-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div>
+            <div class="slide-title">Apa itu Segitiga Pascal?</div>
+            <div class="slide-subtitle">Sejarah, asal-usul, dan fungsinya</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-body scrollable">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-person"></i> Blaise Pascal (1623–1662)</div>
+            <p>Matematikawan, fisikawan, dan filsuf asal Perancis. Meski susunan segitiga ini telah dikenal lebih awal di China (Segitiga Yang Hui) dan Persia (Segitiga Omar Khayyam), Pascal-lah yang secara sistematis mengkaji sifat-sifatnya dalam karya <em>"Traité du triangle arithmétique"</em> (1654).</p>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-history"></i> Asal-usul</div>
+            <p>Pola ini sudah dikenal sejak abad ke-10 di India dan China. Namun nama "Segitiga Pascal" menjadi populer di Eropa berkat kontribusi besar Blaise Pascal dalam mengaitkan segitiga ini dengan koefisien binomial dan teori probabilitas.</p>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-gear"></i> Fungsi dalam Matematika</div>
+            <p>Digunakan untuk menghitung koefisien ekspansi binomial, menentukan nilai kombinasi, menemukan pola bilangan, serta sebagai alat bantu dalam probabilitas dan statistika.</p>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-link"></i> Hubungan dengan Kombinasi</div>
+            <p>Setiap bilangan pada Segitiga Pascal merupakan nilai \(C(n,r)\) — jumlah cara memilih \(r\) objek dari \(n\) objek. Ini menjadikan segitiga ini alat visual yang powerful dalam kombinatorika.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================
+         SLIDE 4 – BENTUK SEGITIGA PASCAL
+         ======================== -->
+    <div class="slide slide-content" data-index="3">
+      <div class="slide-header">
+        <div class="slide-header-line">
+          <div class="header-icon"><i class="fa-solid fa-table"></i></div>
+          <div>
+            <div class="slide-title">Bentuk Segitiga Pascal</div>
+            <div class="slide-subtitle">Susunan bilangan dari baris ke-0 hingga baris ke-6</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-body" style="align-items:center">
+        <div class="card" style="width:100%;max-width:900px">
+          <div class="card-title" style="justify-content:center;margin-bottom:0.3rem">
+            <i class="fa-solid fa-triangle-exclamation"></i> Klik sel untuk melihat reaksi
+          </div>
+          <div class="pascal-wrap" id="pascal-triangle"></div>
+        </div>
+        <div class="card" style="width:100%;max-width:900px">
+          <div class="card-title"><i class="fa-solid fa-info-circle"></i> Cara Mendapatkan Angka</div>
+          <p>Setiap angka diperoleh dari <strong>penjumlahan dua angka di atasnya</strong>. Ujung setiap baris selalu bernilai <strong>1</strong>. Baris ke-\(n\) memiliki \(n+1\) elemen dan dimulai dari baris ke-0.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================
+         SLIDE 5 – CARA MEMBENTUK
+         ======================== -->
+    <div class="slide slide-content" data-index="4">
+      <div class="slide-header">
+        <div class="slide-header-line">
+          <div class="header-icon"><i class="fa-solid fa-plus"></i></div>
+          <div>
+            <div class="slide-title">Cara Membentuk Segitiga Pascal</div>
+            <div class="slide-subtitle">Aturan dasar dan contoh animasi penjumlahan</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-body scrollable">
+        <div class="grid-2">
+          <div style="display:flex;flex-direction:column;gap:0.7rem">
+            <div class="card">
+              <div class="card-title"><i class="fa-solid fa-1"></i> Baris Pertama</div>
+              <p>Baris ke-0 hanya berisi satu angka, yaitu <strong>1</strong>. Ini merupakan titik awal segitiga.</p>
+            </div>
+            <div class="card">
+              <div class="card-title"><i class="fa-solid fa-arrow-left-right"></i> Ujung Selalu 1</div>
+              <p>Setiap baris selalu diawali dan diakhiri dengan angka <strong>1</strong>, yang merupakan batas tepi segitiga.</p>
+            </div>
+            <div class="card">
+              <div class="card-title"><i class="fa-solid fa-plus"></i> Aturan Penjumlahan</div>
+              <p>Angka di tengah diperoleh dengan <strong>menjumlahkan dua angka di atasnya</strong>. Contoh: angka 6 pada baris ke-4 berasal dari 3 + 3 di baris ke-3.</p>
+            </div>
+          </div>
+          <div class="card" style="display:flex;flex-direction:column;gap:0.9rem;justify-content:center">
+            <div class="card-title"><i class="fa-solid fa-calculator"></i> Contoh Animasi</div>
+            <div style="display:flex;flex-direction:column;gap:0.7rem">
+              <div class="add-demo">
+                <div class="add-num">1</div>
+                <span>+</span>
+                <div class="add-num">2</div>
+                <span>=</span>
+                <div class="add-result">3</div>
+              </div>
+              <div class="add-demo">
+                <div class="add-num">3</div>
+                <span>+</span>
+                <div class="add-num">3</div>
+                <span>=</span>
+                <div class="add-result">6</div>
+              </div>
+              <div class="add-demo">
+                <div class="add-num">6</div>
+                <span>+</span>
+                <div class="add-num">4</div>
+                <span>=</span>
+                <div class="add-result">10</div>
+              </div>
+              <div class="add-demo">
+                <div class="add-num">4</div>
+                <span>+</span>
+                <div class="add-num">1</div>
+                <span>=</span>
+                <div class="add-result">5</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================
+         SLIDE 6 – HUBUNGAN KOMBINASI
+         ======================== -->
+    <div class="slide slide-content" data-index="5">
+      <div class="slide-header">
+        <div class="slide-header-line">
+          <div class="header-icon"><i class="fa-solid fa-link"></i></div>
+          <div>
+            <div class="slide-title">Hubungan dengan Kombinasi</div>
+            <div class="slide-subtitle">Setiap nilai Pascal = nilai C(n,r)</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-body scrollable">
+        <div class="math-box card">
+          <div class="card-title"><i class="fa-solid fa-function"></i> Rumus Kombinasi</div>
+          <div style="margin-top:0.5rem;text-align:center;font-size:1.1rem">
+            \[ C(n,r) = \frac{n!}{r!(n-r)!} \]
+          </div>
+          <p style="margin-top:0.5rem;font-size:0.8rem">di mana \(n\) = jumlah total objek, \(r\) = jumlah objek yang dipilih, dan \(!\) adalah faktorial.</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-table"></i> Tabel Baris ke-5 Segitiga Pascal</div>
+          <table class="styled-table" style="margin-top:0.5rem">
+            <thead>
+              <tr>
+                <th>Baris</th>
+                <th>Nilai Pascal</th>
+                <th>r = 0</th>
+                <th>r = 1</th>
+                <th>r = 2</th>
+                <th>r = 3</th>
+                <th>r = 4</th>
+                <th>r = 5</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>5</strong></td>
+                <td>1 · 5 · 10 · 10 · 5 · 1</td>
+                <td>C(5,0)=1</td>
+                <td>C(5,1)=5</td>
+                <td>C(5,2)=10</td>
+                <td>C(5,3)=10</td>
+                <td>C(5,4)=5</td>
+                <td>C(5,5)=1</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-circle-info"></i> Penjelasan</div>
+          <p>Setiap angka pada Segitiga Pascal di baris ke-\(n\) dan posisi ke-\(r\) (dihitung dari 0) tepat sama dengan nilai \(C(n,r)\). Ini berarti kita bisa membaca nilai kombinasi langsung dari segitiga tanpa perlu menghitung faktorial.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================
+         SLIDE 7 – CONTOH PERHITUNGAN
+         ======================== -->
+    <div class="slide slide-content" data-index="6">
+      <div class="slide-header">
+        <div class="slide-header-line">
+          <div class="header-icon"><i class="fa-solid fa-calculator"></i></div>
+          <div>
+            <div class="slide-title">Contoh Perhitungan C(5,2)</div>
+            <div class="slide-subtitle">Langkah demi langkah menggunakan rumus kombinasi</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-question-circle"></i> Soal</div>
+          <p>Hitung nilai \( C(5,2) \) menggunakan rumus kombinasi, lalu cocokkan dengan nilai pada Segitiga Pascal baris ke-5.</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-list-ol"></i> Langkah Penyelesaian</div>
+          <div style="display:flex;flex-direction:column;gap:0.6rem;margin-top:0.5rem">
+            <div class="step-box">
+              <div class="step-num">1</div>
+              <div>\[ C(5,2) = \frac{5!}{2!(5-2)!} = \frac{5!}{2! \cdot 3!} \]</div>
+            </div>
+            <div class="step-box">
+              <div class="step-num">2</div>
+              <div>\[ = \frac{5 \times 4 \times 3 \times 2 \times 1}{(2 \times 1)(3 \times 2 \times 1)} = \frac{120}{2 \times 6} \]</div>
+            </div>
+            <div class="step-box">
+              <div class="step-num">3</div>
+              <div>\[ = \frac{120}{12} = 10 \]</div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="background:linear-gradient(135deg,var(--blue-600),var(--blue-800));color:#fff">
+          <div class="card-title" style="color:#fff"><i class="fa-solid fa-check-circle"></i> Kesimpulan</div>
+          <p style="color:rgba(255,255,255,0.9)">Nilai \( C(5,2) = \mathbf{10} \) — yang sama persis dengan angka ke-3 (index 2) pada baris ke-5 Segitiga Pascal: <strong>1, 5, 10, 10, 5, 1</strong>.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================
+         SLIDE 8 – CONTOH SOAL 1
+         ======================== -->
+    <div class="slide slide-content" data-index="7">
+      <div class="slide-header">
+        <div class="slide-header-line">
+          <div class="header-icon"><i class="fa-solid fa-user-graduate"></i></div>
+          <div>
+            <div class="slide-title">Contoh Soal 1 – Memilih Perwakilan</div>
+            <div class="slide-subtitle">Pemilihan mahasiswa sebagai peserta lomba</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-body scrollable">
+        <div class="card" style="border-left:4px solid var(--blue-500)">
+          <div class="card-title"><i class="fa-solid fa-clipboard-question"></i> Soal</div>
+          <p>Di dalam sebuah kelas terdapat <strong>6 mahasiswa</strong>. Dosen ingin memilih <strong>3 mahasiswa</strong> sebagai perwakilan lomba. Berapa banyak cara memilihnya?</p>
+        </div>
+        <div class="people-row" id="people-row">
+          <!-- generated by JS -->
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-list-ol"></i> Penyelesaian</div>
+          <div style="font-size:0.82rem;display:flex;flex-direction:column;gap:0.4rem">
+            <p><strong>Diketahui:</strong> \( n = 6 \), \( r = 3 \)</p>
+            <div class="step-box">
+              <div class="step-num">1</div>
+              <div>\[ C(6,3) = \frac{6!}{3!(6-3)!} = \frac{6!}{3! \cdot 3!} \]</div>
+            </div>
+            <div class="step-box">
+              <div class="step-num">2</div>
+              <div>\[ = \frac{720}{6 \times 6} = \frac{720}{36} \]</div>
+            </div>
+            <div class="step-box">
+              <div class="step-num">3</div>
+              <div>\[ = 20 \]</div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff">
+          <div class="card-title" style="color:#fff"><i class="fa-solid fa-check"></i> Jawaban</div>
+          <p style="color:rgba(255,255,255,0.95)">Terdapat <strong>20 cara</strong> memilih 3 mahasiswa dari 6 mahasiswa.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================
+         SLIDE 9 – CONTOH SOAL 2
+         ======================== -->
+    <div class="slide slide-content" data-index="8">
+      <div class="slide-header">
+        <div class="slide-header-line">
+          <div class="header-icon"><i class="fa-solid fa-handshake"></i></div>
+          <div>
+            <div class="slide-title">Contoh Soal 2 – Memilih Ketua</div>
+            <div class="slide-subtitle">Pemilihan pasangan ketua dari calon yang tersedia</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="card" style="border-left:4px solid var(--blue-500)">
+          <div class="card-title"><i class="fa-solid fa-clipboard-question"></i> Soal</div>
+          <p>Sebuah panitia memiliki <strong>8 calon ketua</strong>. Akan dipilih <strong>2 orang</strong> sebagai ketua bersama. Berapa banyak kemungkinan pasangan yang bisa terbentuk?</p>
+        </div>
+        <div class="people-row" id="people-row-2"></div>
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-list-ol"></i> Penyelesaian</div>
+          <div style="display:flex;flex-direction:column;gap:0.5rem">
+            <p style="font-size:0.82rem"><strong>Diketahui:</strong> \( n = 8 \), \( r = 2 \)</p>
+            <div class="step-box">
+              <div class="step-num">1</div>
+              <div>\[ C(8,2) = \frac{8!}{2!(8-2)!} = \frac{8!}{2! \cdot 6!} \]</div>
+            </div>
+            <div class="step-box">
+              <div class="step-num">2</div>
+              <div>\[ = \frac{40320}{2 \times 720} = \frac{40320}{1440} \]</div>
+            </div>
+            <div class="step-box">
+              <div class="step-num">3</div>
+              <div>\[ = 28 \]</div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff">
+          <div class="card-title" style="color:#fff"><i class="fa-solid fa-check"></i> Jawaban</div>
+          <p style="color:rgba(255,255,255,0.95)">Terdapat <strong>28 pasangan</strong> yang mungkin terbentuk.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================
+         SLIDE 10 – SIFAT SEGITIGA PASCAL
+         ======================== -->
+    <div class="slide slide-content" data-index="9">
+      <div class="slide-header">
+        <div class="slide-header-line">
+          <div class="header-icon"><i class="fa-solid fa-star"></i></div>
+          <div>
+            <div class="slide-title">Sifat-sifat Segitiga Pascal</div>
+            <div class="slide-subtitle">Karakteristik unik yang membuat segitiga ini istimewa</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-body scrollable">
+        <div class="grid-2">
+          <div class="property-badge">
+            <div class="prop-icon"><i class="fa-solid fa-arrows-left-right"></i></div>
+            <div>
+              <div class="card-title">Simetris</div>
+              <p style="font-size:0.8rem">Segitiga Pascal bersifat simetris terhadap sumbu tengahnya. Angka pada sisi kiri sama dengan sisi kanan, contoh: baris ke-4 adalah <strong>1 4 6 4 1</strong>.</p>
+            </div>
+          </div>
+          <div class="property-badge">
+            <div class="prop-icon"><i class="fa-solid fa-1"></i></div>
+            <div>
+              <div class="card-title">Ujung Selalu 1</div>
+              <p style="font-size:0.8rem">Setiap baris selalu dimulai dan diakhiri dengan angka <strong>1</strong>, sesuai dengan \( C(n,0) = C(n,n) = 1 \) untuk semua nilai \( n \).</p>
+            </div>
+          </div>
+          <div class="property-badge">
+            <div class="prop-icon"><i class="fa-solid fa-sigma"></i></div>
+            <div>
+              <div class="card-title">Jumlah Baris = 2ⁿ</div>
+              <p style="font-size:0.8rem">Jumlah semua angka pada baris ke-\(n\) selalu sama dengan \( 2^n \). Contoh baris ke-3: \( 1+3+3+1 = 8 = 2^3 \).</p>
+            </div>
+          </div>
+          <div class="property-badge">
+            <div class="prop-icon"><i class="fa-solid fa-slash"></i></div>
+            <div>
+              <div class="card-title">Diagonal Segitiga</div>
+              <p style="font-size:0.8rem">Diagonal kedua dari kiri membentuk barisan bilangan asli (1, 2, 3, …). Diagonal ketiga membentuk bilangan segitiga (1, 3, 6, 10, …).</p>
+            </div>
+          </div>
+          <div class="property-badge" style="grid-column:span 2">
+            <div class="prop-icon"><i class="fa-solid fa-plus"></i></div>
+            <div>
+              <div class="card-title">Aturan Penjumlahan</div>
+              <p style="font-size:0.8rem">Setiap angka tepat sama dengan jumlah dua angka di atasnya. Secara matematis: \( C(n,r) = C(n-1,r-1) + C(n-1,r) \), dikenal sebagai Identitas Pascal.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================
+         SLIDE 11 – POLA MENARIK
+         ======================== -->
+    <div class="slide slide-content" data-index="10">
+      <div class="slide-header">
+        <div class="slide-header-line">
+          <div class="header-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+          <div>
+            <div class="slide-title">Pola Menarik dalam Segitiga Pascal</div>
+            <div class="slide-subtitle">Tersembunyi di balik angka-angka sederhana</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-body scrollable">
+        <div class="grid-3" style="margin-bottom:0.5rem">
+          <div class="pattern-card">
+            <i class="fa-solid fa-spiral"></i>
+            <h4>Fibonacci</h4>
+            <p>Jumlah diagonal miring Segitiga Pascal membentuk barisan Fibonacci: 1, 1, 2, 3, 5, 8, 13, …</p>
+          </div>
+          <div class="pattern-card">
+            <i class="fa-solid fa-shapes"></i>
+            <h4>Bil. Segitiga</h4>
+            <p>Diagonal ketiga dari kiri: 1, 3, 6, 10, 15, … merupakan bilangan segitiga \( \frac{n(n+1)}{2} \).</p>
+          </div>
+          <div class="pattern-card">
+            <i class="fa-solid fa-superscript"></i>
+            <h4>Pangkat Binomial</h4>
+            <p>Koefisien ekspansi \((a+b)^n\) persis sama dengan baris ke-\(n\) Segitiga Pascal.</p>
+          </div>
+          <div class="pattern-card">
+            <i class="fa-solid fa-arrows-left-right"></i>
+            <h4>Simetri</h4>
+            <p>Setiap baris merupakan cerminan dirinya sendiri — baris ke-\(n\) sama dari kiri maupun kanan.</p>
+          </div>
+          <div class="pattern-card">
+            <i class="fa-solid fa-link"></i>
+            <h4>Nilai Kombinasi</h4>
+            <p>Setiap angka pada baris ke-\(n\) posisi ke-\(r\) tepat sama dengan \( C(n,r) \).</p>
+          </div>
+          <div class="pattern-card">
+            <i class="fa-solid fa-infinity"></i>
+            <h4>Pangkat 11</h4>
+            <p>Baris ke-0 s.d. ke-4 = 11⁰=1, 11¹=11, 11²=121, 11³=1331, 11⁴=14641.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-spiral"></i> Barisan Fibonacci dari Diagonal Pascal</div>
+          <div class="fib-seq">
+            <span class="fib-num">1</span>
+            <span style="color:var(--text-muted)">+</span>
+            <span class="fib-num">1</span>
+            <span style="color:var(--text-muted)">=</span>
+            <span class="fib-num">2</span>
+            <span style="color:var(--text-muted)">,</span>
+            <span class="fib-num">3</span>
+            <span style="color:var(--text-muted)">,</span>
+            <span class="fib-num">5</span>
+            <span style="color:var(--text-muted)">,</span>
+            <span class="fib-num">8</span>
+            <span style="color:var(--text-muted)">,</span>
+            <span class="fib-num">13</span>
+            <span style="color:var(--text-muted)">,</span>
+            <span class="fib-num">21</span>
+            <span style="color:var(--text-muted)">, ...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================
+         SLIDE 12 – TEOREMA BINOMIAL
+         ======================== -->
+    <div class="slide slide-content" data-index="11">
+      <div class="slide-header">
+        <div class="slide-header-line">
+          <div class="header-icon"><i class="fa-solid fa-superscript"></i></div>
+          <div>
+            <div class="slide-title">Teorema Binomial</div>
+            <div class="slide-subtitle">Koefisien ekspansi langsung dari Segitiga Pascal</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="math-box card">
+          <div class="card-title"><i class="fa-solid fa-function"></i> Teorema Binomial</div>
+          <div style="text-align:center;margin-top:0.5rem">
+            \[ (a+b)^n = \sum_{r=0}^{n} C(n,r)\, a^{n-r}\, b^r \]
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-expand"></i> Ekspansi (a+b)⁴</div>
+          <div style="text-align:center;margin:0.6rem 0 0.3rem">
+            \[ (a+b)^4 = a^4 + 4a^3b + 6a^2b^2 + 4ab^3 + b^4 \]
+          </div>
+          <div class="binomial-row" style="margin-top:0.5rem">
+            <div class="binom-coeff">1</div>
+            <div class="binom-term">a⁴</div>
+            <div style="color:var(--text-muted);font-size:1.1rem">+</div>
+            <div class="binom-coeff">4</div>
+            <div class="binom-term">a³b</div>
+            <div style="color:var(--text-muted);font-size:1.1rem">+</div>
+            <div class="binom-coeff">6</div>
+            <div class="binom-term">a²b²</div>
+            <div style="color:var(--text-muted);font-size:1.1rem">+</div>
+            <div class="binom-coeff">4</div>
+            <div class="binom-term">ab³</div>
+            <div style="color:var(--text-muted);font-size:1.1rem">+</div>
+            <div class="binom-coeff">1</div>
+            <div class="binom-term">b⁴</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-triangle-exclamation"></i> Hubungan dengan Segitiga Pascal</div>
+          <p>Koefisien <strong>1, 4, 6, 4, 1</strong> persis sama dengan baris ke-4 Segitiga Pascal. Ini bukan kebetulan — Teorema Binomial memang menggunakan nilai \( C(n,r) \) sebagai koefisiennya, dan nilai itulah yang tertera di Segitiga Pascal.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================
+         SLIDE 13 – PENERAPAN
+         ======================== -->
+    <div class="slide slide-content" data-index="12">
+      <div class="slide-header">
+        <div class="slide-header-line">
+          <div class="header-icon"><i class="fa-solid fa-microchip"></i></div>
+          <div>
+            <div class="slide-title">Penerapan di Berbagai Bidang</div>
+            <div class="slide-subtitle">Segitiga Pascal dalam dunia nyata dan teknologi</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-body scrollable">
+        <div class="grid-4">
+          <div class="app-card">
+            <i class="fa-solid fa-laptop-code"></i>
+            <span>Informatika</span>
+            <p style="font-size:0.7rem;font-weight:400;color:var(--text-muted)">Analisis kompleksitas kombinatorial dalam algoritma</p>
+          </div>
+          <div class="app-card">
+            <i class="fa-solid fa-robot"></i>
+            <span>AI &amp; ML</span>
+            <p style="font-size:0.7rem;font-weight:400;color:var(--text-muted)">Distribusi probabilitas pada model Naive Bayes</p>
+          </div>
+          <div class="app-card">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>Data Science</span>
+            <p style="font-size:0.7rem;font-weight:400;color:var(--text-muted)">Distribusi binomial dalam analisis data statistik</p>
+          </div>
+          <div class="app-card">
+            <i class="fa-solid fa-dice"></i>
+            <span>Probabilitas</span>
+            <p style="font-size:0.7rem;font-weight:400;color:var(--text-muted)">Menghitung peluang kejadian ganda / berulang</p>
+          </div>
+          <div class="app-card">
+            <i class="fa-solid fa-chart-bar"></i>
+            <span>Statistika</span>
+            <p style="font-size:0.7rem;font-weight:400;color:var(--text-muted)">Distribusi normal dan binomial dalam riset</p>
+          </div>
+          <div class="app-card">
+            <i class="fa-solid fa-key"></i>
+            <span>Kriptografi</span>
+            <p style="font-size:0.7rem;font-weight:400;color:var(--text-muted)">Pembangkit kunci dan analisis keamanan data</p>
+          </div>
+          <div class="app-card">
+            <i class="fa-solid fa-sitemap"></i>
+            <span>Algoritma</span>
+            <p style="font-size:0.7rem;font-weight:400;color:var(--text-muted)">Dynamic programming via Pascal's identity</p>
+          </div>
+          <div class="app-card">
+            <i class="fa-solid fa-flask"></i>
+            <span>Fisika &amp; Kimia</span>
+            <p style="font-size:0.7rem;font-weight:400;color:var(--text-muted)">Menghitung kemungkinan konfigurasi molekular</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-circle-info"></i> Catatan</div>
+          <p>Dalam Machine Learning, distribusi binomial yang diperoleh dari Segitiga Pascal digunakan untuk memodelkan percobaan Bernoulli, sedangkan dalam kriptografi, kombinatorika membantu menganalisis kekuatan enkripsi berdasarkan jumlah kemungkinan kunci.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================
+         SLIDE 14 – KELEBIHAN & KELEMAHAN
+         ======================== -->
+    <div class="slide slide-content" data-index="13">
+      <div class="slide-header">
+        <div class="slide-header-line">
+          <div class="header-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+          <div>
+            <div class="slide-title">Kelebihan dan Kelemahan</div>
+            <div class="slide-subtitle">Evaluasi penggunaan Segitiga Pascal secara praktis</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-body">
+        <div class="pros-cons">
+          <div class="card">
+            <div class="card-title" style="color:#22c55e"><i class="fa-solid fa-thumbs-up"></i> Kelebihan</div>
+            <ul class="pros-list" style="list-style:none;margin-top:0.5rem">
+              <li><i class="fa-solid fa-check-circle"></i> <span>Mudah dipahami secara visual — cukup lihat susunan angka tanpa rumus rumit</span></li>
+              <li><i class="fa-solid fa-check-circle"></i> <span>Cepat menghitung nilai kombinasi untuk \(n\) kecil hingga menengah</span></li>
+              <li><i class="fa-solid fa-check-circle"></i> <span>Efisien sebagai alat bantu manual maupun referensi cepat</span></li>
+              <li><i class="fa-solid fa-check-circle"></i> <span>Banyak digunakan lintas bidang: matematika, fisika, informatika, statistika</span></li>
+              <li><i class="fa-solid fa-check-circle"></i> <span>Memiliki banyak pola tersembunyi yang kaya secara matematika</span></li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="card-title" style="color:#ef4444"><i class="fa-solid fa-thumbs-down"></i> Kelemahan</div>
+            <ul class="cons-list" style="list-style:none;margin-top:0.5rem">
+              <li><i class="fa-solid fa-xmark-circle"></i> <span>Tidak praktis untuk nilai \(n\) sangat besar — terlalu banyak baris yang harus ditulis</span></li>
+              <li><i class="fa-solid fa-xmark-circle"></i> <span>Semakin banyak baris, semakin besar kemungkinan kesalahan penulisan manual</span></li>
+              <li><i class="fa-solid fa-xmark-circle"></i> <span>Tetap memerlukan pemahaman dasar kombinasi agar bisa diinterpretasikan dengan benar</span></li>
+              <li><i class="fa-solid fa-xmark-circle"></i> <span>Tidak memberikan gambaran langsung tentang proses pemilihan — hanya hasilnya saja</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card" style="margin-top:0.3rem">
+          <div class="card-title"><i class="fa-solid fa-lightbulb"></i> Rekomendasi</div>
+          <p>Segitiga Pascal sangat efektif sebagai alat bantu visual untuk \(n \leq 15\). Untuk nilai \(n\) yang lebih besar, lebih baik menggunakan formula langsung \(C(n,r)\) atau alat komputasi.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================
+         SLIDE 15 – KESIMPULAN
+         ======================== -->
+    <div class="slide slide-content" data-index="14">
+      <div class="slide-header">
+        <div class="slide-header-line">
+          <div class="header-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+          <div>
+            <div class="slide-title">Kesimpulan</div>
+            <div class="slide-subtitle">Poin-poin utama dari presentasi ini</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-body" style="gap:0.6rem">
+        <div class="conclusion-item">
+          <div class="conclusion-num">1</div>
+          <p>Segitiga Pascal merupakan susunan bilangan berbentuk segitiga yang disusun berdasarkan aturan penjumlahan sederhana, namun menyimpan kekayaan matematika yang luar biasa.</p>
+        </div>
+        <div class="conclusion-item">
+          <div class="conclusion-num">2</div>
+          <p>Setiap angka pada segitiga diperoleh dari <strong>penjumlahan dua angka di atasnya</strong>, dengan ujung setiap baris selalu bernilai 1.</p>
+        </div>
+        <div class="conclusion-item">
+          <div class="conclusion-num">3</div>
+          <p>Nilai pada Segitiga Pascal di baris ke-\(n\) dan posisi ke-\(r\) persis sama dengan nilai kombinasi \( C(n,r) \), menjadikannya representasi visual kombinatorika.</p>
+        </div>
+        <div class="conclusion-item">
+          <div class="conclusion-num">4</div>
+          <p>Segitiga Pascal sangat berguna dalam <strong>Teorema Binomial</strong> — koefisien ekspansi \((a+b)^n\) langsung terbaca dari baris ke-\(n\).</p>
+        </div>
+        <div class="conclusion-item">
+          <div class="conclusion-num">5</div>
+          <p>Penerapannya sangat luas, mulai dari informatika, algoritma, AI, machine learning, kriptografi, hingga statistika dan probabilitas di dunia nyata.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================
+         SLIDE 16 – TERIMA KASIH
+         ======================== -->
+    <div class="slide slide-cover thankyou-bg" data-index="15">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div id="confetti-container"></div>
+      <div class="cover-wrap">
+        <div class="cover-badge"><i class="fa-solid fa-graduation-cap"></i>&nbsp; Matematika Diskrit – Kelompok 6</div>
+        <div class="ty-main">TERIMA KASIH</div>
+        <div class="ty-question"><i class="fa-solid fa-circle-question"></i> &nbsp;Ada Pertanyaan?</div>
+        <div class="cover-divider"></div>
+        <p class="ty-quote">"Belajar Matematika bukan hanya menghitung angka, tetapi melatih cara berpikir logis dan sistematis."</p>
+        <div class="cover-divider"></div>
+        <div style="color:rgba(255,255,255,0.6);font-size:0.75rem">
+          Segitiga Pascal dalam Kombinatorika &nbsp;|&nbsp; Matematika Diskrit
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end #presentation -->
+
+  <!-- ============================================================
+       TOOLBAR
+       ============================================================ -->
+  <div id="toolbar">
+    <button class="tb-btn" id="btn-prev" title="Slide Sebelumnya (←)">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+
+    <span id="slide-counter">1 / 16</span>
+
+    <button class="tb-btn" id="btn-next" title="Slide Berikutnya (→)">
+      <i class="fa-solid fa-chevron-right"></i>
+    </button>
+
+    <div class="tb-sep"></div>
+
+    <!-- Jump to slide -->
+    <input type="number" id="jump-input" min="1" max="16" placeholder="No" title="Loncat ke slide" />
+    <button class="tb-btn" id="btn-jump" title="Loncat ke Slide">
+      <i class="fa-solid fa-arrow-right"></i>
+    </button>
+
+    <div class="tb-sep"></div>
+
+    <!-- Timer -->
+    <i class="fa-solid fa-stopwatch" style="color:var(--blue-500);font-size:0.85rem"></i>
+    <span id="timer-display">00:00</span>
+    <button class="tb-btn" id="btn-timer" title="Start/Stop Timer">
+      <i class="fa-solid fa-play"></i>
+    </button>
+
+    <div class="tb-sep"></div>
+
+    <!-- Dark mode -->
+    <button class="tb-btn" id="btn-dark" title="Dark / Light Mode">
+      <i class="fa-solid fa-moon"></i>
+    </button>
+
+    <!-- Fullscreen -->
+    <button class="tb-btn" id="btn-fullscreen" title="Fullscreen">
+      <i class="fa-solid fa-expand"></i>
+    </button>
+
+    <!-- Print / PDF -->
+    <button class="tb-btn" id="btn-print" title="Cetak / Simpan PDF">
+      <i class="fa-solid fa-print"></i>
+    </button>
+  </div>
+
+  <!-- ============================================================
+       JAVASCRIPT
+       ============================================================ -->
+  <script>
+    /* =========================================================
+       SLIDE ENGINE
+       ========================================================= */
+    const slides     = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    let current = 0;
+    let isAnimating = false;
+
+    /** Go to a specific slide index */
+    function goTo(idx) {
+      if (isAnimating) return;
+      if (idx < 0 || idx >= totalSlides) return;
+      if (idx === current) return;
+
+      isAnimating = true;
+      const prev = current;
+      current = idx;
+
+      // Direction
+      const forward = idx > prev;
+
+      slides[prev].classList.remove('active');
+      slides[prev].classList.add(forward ? 'exit-left' : 'exit-right');
+
+      // Reset incoming slide position
+      slides[current].style.transform = forward ? 'translateX(60px)' : 'translateX(-60px)';
+      slides[current].style.opacity = '0';
+      slides[current].classList.remove('exit-left', 'exit-right');
+      slides[current].classList.add('active');
+
+      // Force reflow
+      void slides[current].offsetWidth;
+
+      // Animate in
+      slides[current].style.transform = '';
+      slides[current].style.opacity = '';
+
+      setTimeout(() => {
+        slides[prev].classList.remove('exit-left', 'exit-right');
+        isAnimating = false;
+        onSlideChange(current);
+      }, 520);
+
+      updateUI();
+      if (current === totalSlides - 1) startConfetti();
+    }
+
+    function next() { goTo(current + 1); }
+    function prev() { goTo(current - 1); }
+
+    function updateUI() {
+      // Counter
+      document.getElementById('slide-counter').textContent = `${current + 1} / ${totalSlides}`;
+      // Progress bar
+      const pct = ((current + 1) / totalSlides) * 100;
+      document.getElementById('progress-bar').style.width = pct + '%';
+    }
+
+    /** Called after slide is shown */
+    function onSlideChange(idx) {
+      if (idx === 3) renderPascal();   // Slide 4
+    }
+
+    /* =========================================================
+       PASCAL TRIANGLE RENDERER (Slide 4)
+       ========================================================= */
+    function renderPascal() {
+      const wrap = document.getElementById('pascal-triangle');
+      if (wrap.dataset.rendered) return;
+      wrap.dataset.rendered = 'true';
+
+      const rows = 7;
+      const triangle = [];
+
+      // Build Pascal data
+      for (let r = 0; r < rows; r++) {
+        triangle[r] = [];
+        for (let c = 0; c <= r; c++) {
+          if (c === 0 || c === r) {
+            triangle[r][c] = 1;
+          } else {
+            triangle[r][c] = triangle[r-1][c-1] + triangle[r-1][c];
+          }
+        }
+      }
+
+      // Render rows
+      triangle.forEach((row, r) => {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'pascal-row';
+        row.forEach((val, c) => {
+          const cell = document.createElement('div');
+          cell.className = 'pascal-cell';
+          cell.textContent = val;
+          cell.title = `C(${r},${c}) = ${val}`;
+          rowDiv.appendChild(cell);
+        });
+        wrap.appendChild(rowDiv);
+      });
+
+      // Stagger animation
+      const cells = wrap.querySelectorAll('.pascal-cell');
+      cells.forEach((cell, i) => {
+        setTimeout(() => cell.classList.add('visible'), 60 * i);
+      });
+    }
+
+    /* =========================================================
+       PEOPLE ICONS (Slide 8 & 9)
+       ========================================================= */
+    function renderPeople(containerId, total, selected) {
+      const container = document.getElementById(containerId);
+      if (!container || container.dataset.rendered) return;
+      container.dataset.rendered = 'true';
+
+      for (let i = 1; i <= total; i++) {
+        const div = document.createElement('div');
+        div.className = 'person-icon' + (i <= selected ? ' selected' : '');
+        div.innerHTML = `<i class="fa-solid fa-user"></i><span>M${i}</span>`;
+        container.appendChild(div);
+      }
+    }
+
+    /* =========================================================
+       CONFETTI (Slide 16)
+       ========================================================= */
+    let confettiStarted = false;
+    function startConfetti() {
+      if (confettiStarted) return;
+      confettiStarted = true;
+      const container = document.getElementById('confetti-container');
+      const colors = ['#60a5fa','#93c5fd','#f59e0b','#34d399','#f472b6','#fff'];
+
+      for (let i = 0; i < 30; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'confetti-dot';
+        dot.style.left   = Math.random() * 100 + 'vw';
+        dot.style.top    = (Math.random() * -60) + 'px';
+        dot.style.background = colors[Math.floor(Math.random() * colors.length)];
+        dot.style.animationDuration = (4 + Math.random() * 4) + 's';
+        dot.style.animationDelay    = (Math.random() * 3) + 's';
+        container.appendChild(dot);
+      }
+    }
+
+    /* =========================================================
+       KEYBOARD NAVIGATION
+       ========================================================= */
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next();
+      if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   prev();
+    });
+
+    /* =========================================================
+       TOUCH / SWIPE SUPPORT
+       ========================================================= */
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    document.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    document.addEventListener('touchend', (e) => {
+      const dx = touchStartX - e.changedTouches[0].clientX;
+      const dy = touchStartY - e.changedTouches[0].clientY;
+      // Only horizontal swipe
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+        if (dx > 0) next(); else prev();
+      }
+    }, { passive: true });
+
+    /* =========================================================
+       BUTTONS
+       ========================================================= */
+    document.getElementById('btn-prev').addEventListener('click', prev);
+    document.getElementById('btn-next').addEventListener('click', next);
+
+    // Jump to slide
+    document.getElementById('btn-jump').addEventListener('click', () => {
+      const val = parseInt(document.getElementById('jump-input').value, 10);
+      if (!isNaN(val) && val >= 1 && val <= totalSlides) {
+        goTo(val - 1);
+      }
+    });
+    document.getElementById('jump-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('btn-jump').click();
+    });
+
+    /* =========================================================
+       DARK MODE
+       ========================================================= */
+    let dark = false;
+    document.getElementById('btn-dark').addEventListener('click', () => {
+      dark = !dark;
+      document.body.classList.toggle('dark', dark);
+      const icon = document.getElementById('btn-dark').querySelector('i');
+      icon.className = dark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+    });
+
+    /* =========================================================
+       FULLSCREEN
+       ========================================================= */
+    document.getElementById('btn-fullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+        document.getElementById('btn-fullscreen').querySelector('i').className = 'fa-solid fa-compress';
+      } else {
+        document.exitFullscreen().catch(() => {});
+        document.getElementById('btn-fullscreen').querySelector('i').className = 'fa-solid fa-expand';
+      }
+    });
+
+    document.addEventListener('fullscreenchange', () => {
+      const icon = document.getElementById('btn-fullscreen').querySelector('i');
+      icon.className = document.fullscreenElement ? 'fa-solid fa-compress' : 'fa-solid fa-expand';
+    });
+
+    /* =========================================================
+       PRINT PDF
+       ========================================================= */
+    document.getElementById('btn-print').addEventListener('click', () => {
+      window.print();
+    });
+
+    /* =========================================================
+       TIMER
+       ========================================================= */
+    let timerInterval = null;
+    let timerSeconds  = 0;
+    let timerRunning  = false;
+
+    function formatTime(sec) {
+      const m = String(Math.floor(sec / 60)).padStart(2, '0');
+      const s = String(sec % 60).padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    document.getElementById('btn-timer').addEventListener('click', () => {
+      const icon = document.getElementById('btn-timer').querySelector('i');
+      if (timerRunning) {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        icon.className = 'fa-solid fa-play';
+      } else {
+        timerRunning = true;
+        icon.className = 'fa-solid fa-pause';
+        timerInterval = setInterval(() => {
+          timerSeconds++;
+          document.getElementById('timer-display').textContent = formatTime(timerSeconds);
+        }, 1000);
+      }
+    });
+
+    /* =========================================================
+       PRINT STYLES (inline injection)
+       ========================================================= */
+    const printStyle = document.createElement('style');
+    printStyle.textContent = `
+      @media print {
+        body { overflow: visible !important; }
+        #toolbar, #progress-bar { display: none !important; }
+        #presentation { height: auto !important; overflow: visible !important; }
+        .slide {
+          position: relative !important;
+          opacity: 1 !important;
+          transform: none !important;
+          pointer-events: auto !important;
+          page-break-after: always;
+          height: 100vh;
+          display: flex !important;
+        }
+      }
+    `;
+    document.head.appendChild(printStyle);
+
+    /* =========================================================
+       INIT
+       ========================================================= */
+    // Render people for slide 8 & 9 (run immediately so they're ready)
+    renderPeople('people-row', 6, 3);
+    renderPeople('people-row-2', 8, 2);
+
+    // Init UI
+    updateUI();
+
+    // Init Pascal on slide 4 if it's active on load (unlikely but safe)
+    if (current === 3) renderPascal();
+  </script>
+</body>
+</html>
